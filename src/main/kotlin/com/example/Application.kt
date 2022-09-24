@@ -9,6 +9,7 @@ import io.ktor.server.mustache.*
 
 fun main(args: Array<String>) {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
+
         configureHTTP()
         configureTemplating()
         configureRouting()

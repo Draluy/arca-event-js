@@ -1,3 +1,11 @@
 package com.example.model
 
-data class User(val id: Int, val name: String)
+import com.fasterxml.jackson.annotation.JsonProperty
+
+data class User(
+    @JsonProperty("id") val id: Long,
+    @JsonProperty("first_name") val first_name: String,
+    @JsonProperty("last_name") val last_name: String,
+    @JsonProperty("email") val email: String,
+    @JsonProperty("address") val address: String
+)
