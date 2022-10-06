@@ -1,0 +1,137 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@2.1.0/build/pure-min.css"
+          integrity="sha384-yHIFVG6ClnONEA5yB5DJXfW2/KC173DIQrYoZMEtBvGzmf0PKiGyNEqe9N6BNDBH" crossorigin="anonymous">
+    <link rel="manifest" href="site.webmanifest">
+    <!-- Place favicon.ico in the root directory -->
+
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+
+    <meta name="theme-color" content="#fafafa">
+</head>
+<body>
+
+<div class="pure-menu pure-menu-horizontal" style="height: 100px">
+
+    <ul class="pure-menu-list">
+        <li class="pure-menu-item">
+            <a href="#" onclick="toggleTables()" class="pure-menu-link">In memory table</a>
+        </li>
+        <li class="pure-menu-item">
+            <a href="#" onclick="toggleTables()" class="pure-menu-link">Server side table</a>
+        </li>
+    </ul>
+</div>
+<div id="container1">
+    <form class="pure-form">
+        <fieldset>
+            <label for="search">Recherche:</label>
+            <input type="text" name="search" id="search">
+
+            <button class="pure-button" name="submit" type="submit">Valider</button>
+        </fieldset>
+    </form>
+    <table id="clientside" class="pure-table">
+        <thead>
+        <th>id</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Email</th>
+        <th>Address</th>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+</div>
+<div id="container2">
+    <form class="pure-form">
+        <fieldset>
+            <label for="name">Name:</label>
+            <input type="text" name="search" id="name">
+            <label for="email">Email:</label>
+            <input type="text" name="search" id="email">
+            <label for="address">Address:</label>
+            <input type="text" name="search" id="address">
+
+            <button class="pure-button" name="submit" type="submit">Valider</button>
+        </fieldset>
+    </form>
+
+    <table id="serverside">
+        <thead>
+        <th>id</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Email</th>
+        <th>Address</th>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+    let tableDisplayed = "container1";
+    let tableNotDisplayed = "container2";
+    let toggleTables = () => {
+        document.getElementById(tableDisplayed).style.display = "block";
+        document.getElementById(tableNotDisplayed).style.display = "none";
+
+        [tableDisplayed, tableNotDisplayed] = [tableNotDisplayed, tableDisplayed]
+    }
+
+    class User {
+        constructor(id, first_name, last_name, email, address) {
+            this.id = id;
+            this.first_name = first_name;
+            this.last_name = last_name;
+            this.email = email;
+            this.address = address;
+        }
+    }
+
+    let inMemoryTable = document.getElementById("clientside")
+    let loadAllUsers = async function start() {
+        let response = await fetch("/users")
+        let usersArray = await response.json()
+        let users = usersArray.map(json => new User(json.id, json.first_name, json.last_name, json.email, json.address))
+        displayLines(users, inMemoryTable)
+    }
+
+    let displayLines = (users, table) => {
+
+        let documentFragment = document.createDocumentFragment()
+
+        let createCell = (value) => {
+            let cell = document.createElement("td")
+            cell.innerText = value
+            return cell
+        }
+
+        users.forEach(user => {
+            let line = document.createElement("tr")
+            line.append(createCell(user.id))
+            line.append(createCell(user.first_name))
+            line.append(createCell(user.last_name))
+            line.append(createCell(user.email))
+            line.append(createCell(user.address))
+
+            documentFragment.append(line)
+        })
+
+        table.lastElementChild.append(documentFragment)
+    }
+
+    loadAllUsers();
+    toggleTables();
+</script>
+</body>
+</html>

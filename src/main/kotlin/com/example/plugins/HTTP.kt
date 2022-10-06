@@ -1,12 +1,14 @@
 package com.example.plugins
 
-import io.ktor.server.plugins.compression.*
-import io.ktor.server.plugins.defaultheaders.*
+import com.fasterxml.jackson.databind.SerializationFeature
+import io.ktor.serialization.jackson.*
 import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.request.*
+import io.ktor.server.plugins.compression.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.defaultheaders.*
 
 fun Application.configureHTTP() {
+
     install(Compression) {
         gzip {
             priority = 1.0
