@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/main.css">
     <script src="menu.js"></script>
+    <script src="customelements.js"></script>
     <meta name="theme-color" content="#fafafa">
 </head>
 <body>
@@ -36,18 +37,7 @@
             <button class="pure-button" name="submit" type="submit">Valider</button>
         </fieldset>
     </form>
-    <table id="clientside" class="pure-table">
-        <thead>
-        <th>id</th>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Email</th>
-        <th>Address</th>
-        </thead>
-        <tbody>
-
-        </tbody>
-    </table>
+    <user-table id="in-mem-user-table"></user-table>
 </div>
 <div id="container2">
     <form class="pure-form">
@@ -91,13 +81,17 @@
         }
 
         let allUsers = [];
-        let displayedUsers = [];
+        var displayedUsers = [];
         const form = document.getElementById('inMemoryForm');
         const searchInput = document.getElementById('search');
 
         let refreshSearchData = () => {
             let search = searchInput.value;
             let oldValue = searchInput.oldValue;
+
+            if(search && search.length < 3) {
+                return; // Do not search if previous search was with the old value
+            }
 
             if(oldValue === search) {
                 return; // Do not search if previous search was with the old value
@@ -134,7 +128,6 @@
         searchInput.addEventListener('input', debounce(refreshSearchData, 500));
         form.addEventListener('submit', refreshSearchData);
 
-        let inMemoryTable = document.getElementById("clientside")
         let loadAllUsers = async function start() {
             let response = await fetch("/users")
             let usersArray = await response.json()
@@ -143,28 +136,8 @@
         }
 
         let displayLines = () => {
-
-            let documentFragment = document.createDocumentFragment()
-
-            let createCell = (value) => {
-                let cell = document.createElement("td")
-                cell.innerText = value
-                return cell
-            }
-
-            displayedUsers.forEach(user => {
-                let line = document.createElement("tr")
-                line.append(createCell(user.id))
-                line.append(createCell(user.first_name))
-                line.append(createCell(user.last_name))
-                line.append(createCell(user.email))
-                line.append(createCell(user.address))
-
-                documentFragment.append(line)
-            })
-
-            inMemoryTable.lastElementChild.innerHTML = '';
-            inMemoryTable.lastElementChild.append(documentFragment)
+            let userTable = document.getElementById("in-mem-user-table");
+            userTable.users = displayedUsers
         }
 
         loadAllUsers();
