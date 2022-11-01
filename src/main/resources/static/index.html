@@ -11,12 +11,64 @@
 
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/main.css">
+    <script src="model.js"></script>
     <script src="menu.js"></script>
     <script src="customelements.js"></script>
     <meta name="theme-color" content="#fafafa">
 </head>
 <body>
 
+<script>
+    const searchService = {};
+    window.addEventListener('load',() => {   (function () {
+        let allUsers = [];
+        var displayedUsers = [];
+        const searchInput = document.getElementById('search');
+
+        searchService.refreshSearchData = () => {
+            let search = searchInput.value;
+            let oldValue = searchInput.oldValue;
+
+            if (search && search.length < 3) {
+                return; // Do not search if not enough letters
+            }
+
+            if (oldValue === search) {
+                return; // Do not search if previous search was with the old value
+            }
+
+            console.debug(`Refreshing search with value ${search}`)
+
+            if (search) {
+                let upperSearch = search.toUpperCase();
+                displayedUsers = allUsers.filter(user => user.first_name.toUpperCase().includes(upperSearch)
+                    || user.last_name.toUpperCase().includes(upperSearch)
+                    || user.address.toUpperCase().includes(upperSearch)
+                    || user.email.toUpperCase().includes(upperSearch))
+            } else {
+                displayedUsers = [...allUsers]
+            }
+            searchInput.oldValue = search
+            displayLines()
+        };
+
+        let loadAllUsers = async function start() {
+            let response = await fetch("/users")
+            let usersArray = await response.json()
+            allUsers = displayedUsers = usersArray.map(json => new User(json.id, json.first_name, json.last_name, json.email, json.address))
+            displayLines()
+        }
+
+        let displayLines = () => {
+            let userTable = document.getElementById("in-mem-user-table");
+            userTable.users = displayedUsers
+        }
+
+        loadAllUsers();
+
+        menu.toggleTables();
+    })();});
+</script>
 <div class="pure-menu pure-menu-horizontal" style="height: 100px">
 
     <ul class="pure-menu-list">
@@ -29,11 +81,11 @@
     </ul>
 </div>
 <div id="container1">
-    <form class="pure-form" id="inMemoryForm" action="#" onsubmit="return false;">
+    <form class="pure-form" id="inMemoryForm" action="#" onsubmit="searchService.refreshSearchData()">
         <fieldset>
             <label for="search">Recherche:</label>
             <input type="text" name="search" id="search">
-
+            <input is="debounced-input">
             <button class="pure-button" name="submit" type="submit">Valider</button>
         </fieldset>
     </form>
@@ -68,81 +120,5 @@
 </div>
 
 
-<script>
-    (function () {
-        class User {
-            constructor(id, first_name, last_name, email, address) {
-                this.id = id;
-                this.first_name = first_name;
-                this.last_name = last_name;
-                this.email = email;
-                this.address = address;
-            }
-        }
-
-        let allUsers = [];
-        var displayedUsers = [];
-        const form = document.getElementById('inMemoryForm');
-        const searchInput = document.getElementById('search');
-
-        let refreshSearchData = () => {
-            let search = searchInput.value;
-            let oldValue = searchInput.oldValue;
-
-            if(search && search.length < 3) {
-                return; // Do not search if previous search was with the old value
-            }
-
-            if(oldValue === search) {
-                return; // Do not search if previous search was with the old value
-            }
-
-            console.debug(`Refreshing search with value ${search}`)
-
-            if(search) {
-                let upperSearch = search.toUpperCase();
-                displayedUsers = allUsers.filter(user => user.first_name.toUpperCase().includes(upperSearch)
-                    ||user.last_name.toUpperCase().includes(upperSearch)
-                    ||user.address.toUpperCase().includes(upperSearch)
-                    ||user.email.toUpperCase().includes(upperSearch))
-            } else {
-                displayedUsers = [...allUsers]
-            }
-            searchInput.oldValue = search
-            displayLines()
-        };
-
-        const debounce = (func, wait) => {
-            let timeout;
-
-            return function executedFunction(...args) {
-                clearTimeout(timeout);
-
-                timeout = setTimeout(() => {
-                    clearTimeout(timeout);
-                    func(...args);
-                }, wait);
-            };
-        };
-
-        searchInput.addEventListener('input', debounce(refreshSearchData, 500));
-        form.addEventListener('submit', refreshSearchData);
-
-        let loadAllUsers = async function start() {
-            let response = await fetch("/users")
-            let usersArray = await response.json()
-            allUsers = displayedUsers = usersArray.map(json => new User(json.id, json.first_name, json.last_name, json.email, json.address))
-            displayLines()
-        }
-
-        let displayLines = () => {
-            let userTable = document.getElementById("in-mem-user-table");
-            userTable.users = displayedUsers
-        }
-
-        loadAllUsers();
-        menu.toggleTables();
-    })();
-</script>
 </body>
 </html>

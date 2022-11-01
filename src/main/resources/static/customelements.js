@@ -75,3 +75,42 @@ class UserTable extends HTMLElement{
 }
 
 customElements.define("user-table", UserTable, {});
+
+class DebouncedInput extends HTMLInputElement {
+
+    static get observedAttributes() { return ['time']; }
+
+    constructor(...args) {
+        super(...args);
+        this._time = 300;
+        this.addEventListener("input", this.onInput);
+    }
+
+    debounce  (func, debounceTime) {
+        let timeout;
+        return function executedFunction(...args) {
+            clearTimeout(timeout);
+
+            timeout = setTimeout(() => {
+                clearTimeout(timeout);
+                func(...args);
+            }, debounceTime);
+        };
+    };
+
+    set time (time){
+        this._time = time
+    }
+
+    get time () {
+        return this._time;
+    }
+
+    onInput() {
+        this.debounce(() => {
+            console.log("added input" + this.value)
+        }, this._time)();
+    }
+}
+
+customElements.define("debounced-input", DebouncedInput, {extends: "input"});
